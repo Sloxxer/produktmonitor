@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <title>Registrera</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full bg-gray-50 flex items-center justify-center">
+  <form action="/register" method="POST" class="bg-white p-8 rounded-2xl shadow w-full max-w-sm grid gap-4">
+    <h1 class="text-2xl font-bold text-center">Skapa konto</h1>
+    <input class="input" name="username" placeholder="Användarnamn" required />
+    <input class="input" type="password" name="password" placeholder="Lösenord" required />
+    <input class="input" name="webhook" placeholder="Discord Webhook‑URL" required />
+    <button class="btn" type="submit">Registrera</button>
+    <p class="text-xs text-center">Har konto? <a class="underline" href="/login">Logga in</a></p>
+  </form>
+  <style>
+    .input{ @apply border p-2 rounded w-full; }
+    .btn{ @apply bg-blue-600 hover:bg-blue-700 text-white p-2 rounded w-full; }
+  </style>
+</body>
+</html>
