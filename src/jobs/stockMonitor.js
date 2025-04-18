@@ -77,7 +77,7 @@ export default function startStockMonitor(dbPromise) {
 
         if (res.available && prev !== "in_stock") {
           await db.run("UPDATE products SET last_status='in_stock' WHERE id=?", p.id);
-          let msg = `📢 **${p.url}** är nu *tillgänglig!*`;
+          let msg = `@here 📢 **${p.url}** är nu *tillgänglig!*`;
           if (typeof res.webStock !== "undefined") msg += `\n📦 Lager: **${res.webStock}**`;
           if (typeof res.amountLeft !== "undefined" && res.amountLeft > 0)
             msg += `\n🛒 Förhandsbokningar kvar: **${res.amountLeft}**`;
