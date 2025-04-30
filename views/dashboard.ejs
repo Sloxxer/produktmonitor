@@ -3,30 +3,29 @@
   <head>
     <meta charset="utf-8" />
     <title>Bevakningar</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body class="min-h-screen bg-gray-100">
-    <div class="max-w-3xl mx-auto py-8">
-      <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Hej <%= user.username %>!</h1>
+  <body>
+    <div class="container">
+      <div class="mb-6" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 style="font-size:1.75rem;font-weight:700;">Hej <%= user.username %>!</h1>
         <form action="/logout" method="POST"><button class="btn-primary">Logga ut</button></form>
       </div>
 
-      <form class="mb-8 flex gap-2" action="/products" method="POST">
-        <input name="url" class="flex-1 input" placeholder="Produkt‑URL …" required />
+      <form class="mb-8" style="display:flex;gap:.5rem;" action="/products" method="POST">
+        <input name="url" class="input" placeholder="Produkt‑URL …" required />
         <button class="btn-primary">Lägg till</button>
       </form>
 
-      <div class="grid gap-4">
+      <div class="grid-gap">
         <% if (products.length === 0) { %>
-          <p class="text-gray-600">Du följer inga produkter ännu.</p>
+          <p class="text-sm">Du följer inga produkter ännu.</p>
         <% } else { %>
           <% products.forEach(p => { %>
             <div class="card">
               <a class="link" href="<%= p.url %>" target="_blank"><%= p.url %></a>
               <form action="/products/<%= p.id %>/delete" method="POST">
-                <button class="text-red-600 hover:text-red-800">🗑</button>
+                <button style="color:#e11d48;font-size:1.2rem;background:none;border:none;cursor:pointer;">🗑</button>
               </form>
             </div>
           <% }) %>

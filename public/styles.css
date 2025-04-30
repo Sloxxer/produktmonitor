@@ -1,17 +1,60 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* custom components */
-.input {
-  @apply border border-gray-300 rounded-md px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500;
+/* base reset */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
 }
-.btn-primary {
-  @apply bg-blue-600 text-white rounded-md px-4 py-2 hover:bg-blue-700 transition;
+body{
+  background:#f5f7fa;
+  color:#222;
 }
-.card {
-  @apply bg-white shadow rounded-2xl p-4 flex justify-between items-center;
+/* layout helpers */
+.flex-center{
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.link {
-  @apply text-blue-600 underline break-all;
+/* form elements */
+.input{
+  width:100%;
+  padding:0.6rem 0.8rem;
+  border:1px solid #d0d5dd;
+  border-radius:6px;
+  font-size:1rem;
 }
+.input:focus{
+  outline:2px solid #2563eb;
+  border-color:#2563eb;
+}
+.btn-primary{
+  background:#2563eb;
+  color:#fff;
+  padding:0.6rem 1.2rem;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-size:1rem;
+  transition:background .2s ease;
+}
+.btn-primary:hover{background:#1e4ec5;}
+.card{
+  background:#fff;
+  padding:1rem;
+  border-radius:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.link{
+  color:#2563eb;
+  text-decoration:underline;
+  word-break:break-all;
+}
+/* utility */
+.text-sm{font-size:.85rem;color:#555;}
+.container{max-width:720px;margin:0 auto;padding:2rem 1rem;}
+.mb-6{margin-bottom:1.5rem;}
+.mb-8{margin-bottom:2rem;}
+.grid-gap{display:grid;gap:1rem;}

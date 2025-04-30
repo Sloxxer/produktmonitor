@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<html class="h-full">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Logga in</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/styles.css" />
   </head>
-  <body class="h-full bg-gray-50 flex items-center justify-center">
-    <form action="/login" method="POST" class="bg-white p-8 rounded-2xl shadow w-full max-w-sm grid gap-4">
-      <h1 class="text-2xl font-bold text-center mb-2">Logga in</h1>
+  <body class="flex-center" style="min-height:100vh;">
+    <form action="/login" method="POST" style="background:#fff;padding:2rem;border-radius:16px;box-shadow:0 3px 8px rgba(0,0,0,.06);width:100%;max-width:400px;display:grid;gap:1rem;">
+      <h1 style="font-size:1.5rem;font-weight:700;text-align:center;">Logga in</h1>
       <input class="input" name="username" placeholder="Användarnamn" required />
       <input class="input" type="password" name="password" placeholder="Lösenord" required />
       <button class="btn-primary" type="submit">Logga in</button>
-      <p class="text-xs text-center">Ny här? <a class="underline" href="/register">Registrera konto</a></p>
+      <p class="text-sm" style="text-align:center;">Ny här? <a class="link" href="/register">Registrera konto</a></p>
     </form>
   </body>
 </html>
