@@ -6,7 +6,7 @@ module.exports = {
         script: 'src/server.js',
         env: {
           NODE_ENV: 'production',
-          SESSION_SECRET: 'smother-bullfrog-utter-winking-kudos-unshipped-qualified-secrecy-runny-daytime',
+          SESSION_SECRET: 'Change-this-to-a-super-safe-key',
           PORT: 3010
         },
         max_restarts: 3,
