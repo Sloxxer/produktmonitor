@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Inställningar</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="flex-center" style="min-height:100vh;">
+    <form action="/settings" method="POST" style="background:#fff;padding:2rem;border-radius:16px;box-shadow:0 3px 8px rgba(0,0,0,.06);width:100%;max-width:420px;display:grid;gap:1rem;">
+      <h1 style="font-size:1.5rem;font-weight:700;text-align:center;">Webhook‑inställningar</h1>
+      <% if (typeof query !== 'undefined' && query.ok) { %>
+        <p style="color:#16a34a;text-align:center;">Uppdaterad!</p>
+      <% } %>
+      <label class="text-sm" for="webhook">Nuvarande webhook‑URL</label>
+      <input id="webhook" class="input" name="webhook" value="<%= user.webhook_url %>" required />
+      <button class="btn-primary" type="submit">Spara</button>
+      <p class="text-sm" style="text-align:center;"><a class="link" href="/">← Tillbaka</a></p>
+    </form>
+  </body>
+</html>
