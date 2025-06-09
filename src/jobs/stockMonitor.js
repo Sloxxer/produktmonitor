@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import axios from "axios";
+import puppeteer from "puppeteer";
 
 // HTML‑baserad fallback – letar "InStock" eller "PreOrder" i JSON‑LD
 const HTML_AVAILABLE_RGX = /schema\.org(?:\\\/|\/)(?:InStock|PreOrder)/i;
@@ -19,7 +20,7 @@ async function webhallenStatus(productId) {
     });
 
     const prod = data.product ?? data;
-    const webStock   = prod?.stock?.web ?? prod.stockWeb ?? prod.stock_web ?? 0;
+    const webStock = prod?.stock?.web ?? prod.stockWeb ?? prod.stock_web ?? 0;
     const amountLeft = prod?.price?.amountLeft ?? prod?.price?.amount_left ?? 0;
 
     return {
@@ -33,14 +34,60 @@ async function webhallenStatus(productId) {
   }
 }
 
+// ── Kategori‑scan med Puppeteer ───────────────────────────────
+async function scanCategories(db) {
+  const cats = await db.all("SELECT * FROM categories");
+
+  for (const c of cats) {
+    try {
+      const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+      const page = await browser.newPage();
+      await page.goto(c.url, { timeout: 30000, waitUntil: "networkidle2" });
+      await page.waitForTimeout(2000);
+
+      const links = await page.$$eval('a[href*="/product/"]', anchors =>
+        anchors
+          .map(a => a.href.match(/\\/product\\/(\\d+)/) ? a.href : null)
+          .filter(Boolean)
+      );
+      await browser.close();
+
+      for (const url of links.slice(0, 50)) {
+        await db.run(
+          "INSERT OR IGNORE INTO products (user_id, url) VALUES (?, ?)",
+          [c.user_id, url]
+        );
+        const row = await db.get("SELECT last_insert_rowid() AS id");
+        if (row.id && c.webhook_url) {
+          await axios.post(c.webhook_url, {
+            content: `@here 🆕 Ny produkt funnen: ${url}`,
+          });
+        }
+      }
+
+      await db.run(
+        "UPDATE categories SET last_scanned = datetime('now') WHERE id = ?",
+        c.id
+      );
+    } catch (e) {
+      console.warn("Kategori-scan fel", c.url, e.message);
+    }
+  }
+}
+
 export default function startStockMonitor(dbPromise) {
   console.log("🚀 Stock‑monitor startar …");
   console.log("🔄 cron initierad");
 
-  // Kör var 10:e sekund under test; byt till "*/5 * * * *" i produktion
+  // Kör var 5:e minut; byt till "*/10 * * * * *" vid test
   cron.schedule("*/5 * * * *", async () => {
-    const t  = new Date().toLocaleTimeString();
+    const t = new Date().toLocaleTimeString();
     const db = await dbPromise;
+
+    // 1) Kategorier → nya produkter
+    await scanCategories(db);
+
+    // 2) Befintliga produkter → lagerstatus
     const rows = await db.all(
       "SELECT p.*, u.webhook_url FROM products p JOIN users u ON p.user_id = u.id"
     );

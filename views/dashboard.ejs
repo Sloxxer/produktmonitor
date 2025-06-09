@@ -10,9 +10,13 @@
       <div class="mb-6" style="display:flex;justify-content:space-between;align-items:center;">
         <h1 style="font-size:1.75rem;font-weight:700;">Hej <%= user.username %>!</h1>
         <div style="display:flex;gap:.5rem;">
-          <a class="btn-primary" href="/settings" style="text-decoration:none;display:inline-block;">Inställningar</a>
-          <form action="/logout" method="POST"><button class="btn-primary">Logga ut</button></form>
+          <a class="btn-secondary" href="/categories">Kategorier</a>
+          <a class="btn-secondary" href="/settings">Inställningar</a>
+          <form action="/logout" method="POST">
+            <button class="btn-primary">Logga ut</button>
+          </form>
         </div>
+      </div>
       </div>
 
       <form class="mb-8" style="display:flex;gap:.5rem;" action="/products" method="POST">

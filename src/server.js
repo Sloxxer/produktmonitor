@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import { initSchema, dbPromise } from "./db/index.js";
 import authRoutes from "./routes/auth.js";
 import productRoutes from "./routes/products.js";
+import categoriesRoutes from "./routes/categories.js";
 import startStockMonitor from "./jobs/stockMonitor.js";
 import bcrypt from "bcrypt";
 
@@ -58,6 +59,7 @@ app.use(passport.session());
 //──────────────── Routes
 app.use(authRoutes);
 app.use(productRoutes);
+app.use(categoriesRoutes);
 
 //──────────────── Boot
 await initSchema();

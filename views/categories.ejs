@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Kategorier</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="mb-6" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 style="font-size:1.75rem;font-weight:700;">Kategorier</h1>
+        <a class="btn-secondary" href="/">← Tillbaka</a>
+      </div>
+
+      <form class="mb-8" style="display:flex;gap:.5rem;" action="/categories" method="POST">
+        <input name="url" class="input" placeholder="Kategori-URL …" required />
+        <input name="webhook_url" class="input" placeholder="Webhook-URL för kategorin …" required />
+        <button class="btn-primary">Lägg till</button>
+      </form>
+
+      <div class="grid-gap">
+        <% if (cats.length === 0) { %>
+          <p class="text-sm">Inga kategorier ännu.</p>
+        <% } else { %>
+          <% cats.forEach(c => { %>
+            <div class="card">
+              <a class="link" href="<%= c.url %>" target="_blank"><%= c.url %></a>
+              <form action="/categories/<%= c.id %>/delete" method="POST">
+                <button style="color:#e11d48;font-size:1.2rem;background:none;border:none;cursor:pointer;">🗑</button>
+              </form>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>
