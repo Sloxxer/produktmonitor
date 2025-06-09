@@ -43,13 +43,13 @@ async function scanCategories(db) {
       const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
       const page = await browser.newPage();
       await page.goto(c.url, { timeout: 30000, waitUntil: "networkidle2" });
-      await page.waitForTimeout(2000);
+      await new Promise(res => setTimeout(res, 2000));
 
       const links = await page.$$eval('a[href*="/product/"]', anchors =>
         anchors
-          .map(a => a.href.match(/\\/product\\/(\\d+)/) ? a.href : null)
+          .map(a => a.href.match(/\/product\/(\d+)/) ? a.href : null)
           .filter(Boolean)
-      );
+        );
       await browser.close();
 
       for (const url of links.slice(0, 50)) {
