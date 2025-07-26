@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Kategori-produkter</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Produkter i <%= cat.url %></h1>
+      <a href="/categories" class="btn-secondary">← Tillbaka</a>
+      <table>
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Status</th>
+            <th>Första hittad</th>
+            <th>Senaste</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% products.forEach(p => { %>
+            <tr>
+              <td><a href="<%= p.url %>" target="_blank"><%= p.url %></a></td>
+              <td><%= p.status %></td>
+              <td><%= p.first_seen %></td>
+              <td><%= p.last_seen %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

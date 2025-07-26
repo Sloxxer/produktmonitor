@@ -11,6 +11,18 @@ function extractWebhallenId(url) {
   return m ? m[1] : null;
 }
 
+function normalizeUrl(url) {
+  try {
+    const u = new URL(url);
+    // Shopify: /collections/xxx/products/slug → /products/slug
+    let norm = u.pathname.replace(/\/collections\/[^\/]+\/(products\/[^\/]+)/, "/$1");
+    return `${u.origin}${norm}`;
+  } catch {
+    return url;
+  }
+}
+
+
 async function webhallenStatus(productId) {
   const apiUrl = `https://www.webhallen.com/api/product/${productId}`;
   try {
@@ -45,23 +57,81 @@ async function scanCategories(db) {
       await page.goto(c.url, { timeout: 30000, waitUntil: "networkidle2" });
       await new Promise(res => setTimeout(res, 2000));
 
-      const links = await page.$$eval('a[href*="/product/"]', anchors =>
-        anchors
-          .map(a => a.href.match(/\/product\/(\d+)/) ? a.href : null)
-          .filter(Boolean)
-        );
+      // Extrahera alla produktlänkar och normalisera dem!
+      const products = await page.$$eval('a[href]', (anchors) => {
+        // Injektera normalizeUrl i browser-koden
+        function normalizeUrl(url) {
+          try {
+            const a = document.createElement('a');
+            a.href = url;
+            let norm = a.pathname.replace(/\/collections\/[^\/]+\/(products\/[^\/]+)/, "/$1");
+            return a.origin + norm;
+          } catch {
+            return url;
+          }
+        }
+        const seen = new Set();
+        return anchors
+          .map(a => {
+            const isProduct =
+              /\/product[s]?\//i.test(a.href); // fångar både /product/ och /products/
+            if (isProduct) {
+              const normalized = normalizeUrl(a.href);
+              if (!seen.has(normalized)) {
+                seen.add(normalized);
+                return {
+                  url: normalized,
+                  // status: kan läggas till här senare!
+                };
+              }
+            }
+            return null;
+          })
+          .filter(Boolean);
+      });
+
       await browser.close();
 
-      for (const url of links.slice(0, 50)) {
-        await db.run(
-          "INSERT OR IGNORE INTO products (user_id, url) VALUES (?, ?)",
-          [c.user_id, url]
-        );
-        const row = await db.get("SELECT last_insert_rowid() AS id");
-        if (row.id && c.webhook_url) {
-          await axios.post(c.webhook_url, {
-            content: `@here 🆕 Ny produkt funnen: ${url}`,
-          });
+      // Hämta redan sparade produkter för denna kategori
+      const existingRows = await db.all(
+        "SELECT * FROM category_products WHERE category_id = ?",
+        [c.id]
+      );
+      const existingUrls = new Set(existingRows.map(row => row.url));
+      const foundUrls = new Set(products.map(p => p.url));
+
+      // Spara/uppdatera alla produkter
+      for (const prod of products) {
+        let status = 'unknown'; // default status
+
+        if (!existingUrls.has(prod.url)) {
+          // Ny produkt
+          await db.run(
+            "INSERT INTO category_products (category_id, url, status, first_seen, last_seen) VALUES (?, ?, ?, datetime('now'), datetime('now'))",
+            [c.id, prod.url, status]
+          );
+          // Skicka webhook första gången vi hittar produkten
+          if (c.webhook_url) {
+            await axios.post(c.webhook_url, {
+              content: `@here 🆕 Ny produkt funnen: ${prod.url}`,
+            });
+          }
+        } else {
+          // Uppdatera last_seen och ev. status
+          await db.run(
+            "UPDATE category_products SET last_seen = datetime('now'), status = ? WHERE category_id = ? AND url = ?",
+            [status, c.id, prod.url]
+          );
+        }
+      }
+
+      // Markera som 'gone' de produkter som nu inte längre finns på sidan
+      for (const old of existingRows) {
+        if (!foundUrls.has(old.url) && old.status !== 'gone') {
+          await db.run(
+            "UPDATE category_products SET status = 'gone', last_seen = datetime('now') WHERE id = ?",
+            old.id
+          );
         }
       }
 
@@ -74,6 +144,9 @@ async function scanCategories(db) {
     }
   }
 }
+
+
+
 
 export default function startStockMonitor(dbPromise) {
   console.log("🚀 Stock‑monitor startar …");
@@ -106,15 +179,20 @@ export default function startStockMonitor(dbPromise) {
           }
           res = await webhallenStatus(pid);
         } else {
-          const { data: html } = await axios.get(p.url, {
-            headers: {
-              "User-Agent": "Mozilla/5.0 (compatible; StockMonitor/1.0)",
-              "Accept-Language": "sv-SE,sv;q=0.9,en;q=0.8",
-            },
-            timeout: 15000,
-            validateStatus: (s) => s < 500,
-          });
-          res.available = HTML_AVAILABLE_RGX.test(html);
+          // -- NYTT: Använd Puppeteer för fallback (JS-renderade sidor) --
+          try {
+            const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+            const page = await browser.newPage();
+            await page.goto(p.url, { timeout: 30000, waitUntil: "networkidle2" });
+            await new Promise(res => setTimeout(res, 2000));
+            const html = await page.content();
+            await browser.close();
+
+            res.available = HTML_AVAILABLE_RGX.test(html);
+          } catch (e) {
+            console.warn("Fallback-scrape fel", p.url, e.message);
+            res.available = false;
+          }
         }
 
         const prev = p.last_status;

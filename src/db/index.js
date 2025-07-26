@@ -38,7 +38,20 @@ export async function initSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       url TEXT NOT NULL,
-      last_scanned DATETIME
+      last_scanned DATETIME,
+      webhook_url TEXT NOT NULL
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS category_products (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      category_id INTEGER REFERENCES categories(id) ON DELETE CASCADE,
+      url TEXT NOT NULL,
+      status TEXT DEFAULT 'unknown',
+      last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+      first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(category_id, url)
     );
   `);
 }

@@ -25,6 +25,7 @@
           <% cats.forEach(c => { %>
             <div class="card">
               <a class="link" href="<%= c.url %>" target="_blank"><%= c.url %></a>
+              <a href="/category-products/<%= c.id %>" class="btn-secondary">Visa produkter</a>
               <form action="/categories/<%= c.id %>/delete" method="POST">
                 <button style="color:#e11d48;font-size:1.2rem;background:none;border:none;cursor:pointer;">🗑</button>
               </form>
